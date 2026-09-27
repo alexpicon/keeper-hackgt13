@@ -42,6 +42,7 @@ function show(view) {
   studio.onView(view);
   if (view !== 'capture' && recorder?.state === 'recording') stopRecording();
   document.querySelectorAll('.view').forEach(el => el.hidden = el.id !== view);
+  if (view !== 'reader') $('stickyChapterBar').hidden = true;
   window.scrollTo({top:0, behavior:'instant'});
   syncRoute(view);
 }
@@ -163,11 +164,13 @@ function renderBook() {
   $('editMemoryBtn').textContent = (current.demo || current.curated) ? 'Start my own story →' : 'Edit original memory';
   renderPage();
 }
-function renderPage() {
+function renderPage(focusHeading = false) {
   const page = current.pages[pageIndex];
-  $('bookPages').innerHTML = `<article class="spread"><div class="page-art">${page.image ? `<img src="${escapeHTML(page.image)}" alt="AI watercolor interpretation of this memory"><p>AI illustration · an interpretation, not a photograph</p>` : `<div class="art-empty">A little room<br>for your imagination.</div><p>Create a watercolor illustration from this page.<br>The illustration prompt will be sent to xAI.</p><button class="secondary" id="illustrateBtn" ${!page.illustration ? 'disabled' : ''}>Illustrate this page ✳</button><p id="imageStatus" role="status"></p>`}</div><div class="page-text"><span class="eyebrow">CHAPTER ${String(pageIndex+1).padStart(2,'0')}</span><h2>${escapeHTML(page.title)}</h2><div class="prose" id="pageProse">${escapeHTML(page.text)}</div><button id="editPageBtn" class="text-btn underline">Edit these words</button><details class="source-quote"><summary>Source & adaptation notes</summary>${current.memory.source_provider?`<p>Source recollection preserved by ${escapeHTML(current.memory.source_provider)}</p>`:""}<blockquote>${escapeHTML(page.quote)}</blockquote>${page.adaptation?`<p><b>How this chapter was adapted:</b> ${escapeHTML(page.adaptation)}</p>`:""}</details></div></article>`;
+  $('bookPages').innerHTML = `<article class="spread"><div class="page-art"><div class="art-frame">${page.image ? `<figure class="art-mat"><img src="${escapeHTML(page.image)}" alt="AI watercolor interpretation of this memory"></figure><p class="art-label">AI illustration · an interpretation, not a photograph</p>` : `<div class="art-empty">A little room<br>for your imagination.</div><p>Create a watercolor illustration from this page.<br>The illustration prompt will be sent to xAI.</p><button class="secondary" id="illustrateBtn" ${!page.illustration ? 'disabled' : ''}>Illustrate this page ✳</button><p id="imageStatus" role="status"></p>`}</div></div><div class="page-text"><span class="eyebrow">CHAPTER ${String(pageIndex+1).padStart(2,'0')}</span><h2 id="chapterHeading" tabindex="-1">${escapeHTML(page.title)}</h2><div class="prose" id="pageProse">${escapeHTML(page.text)}</div><button id="editPageBtn" class="text-btn underline">Edit these words</button><details class="source-quote"><summary>Source & adaptation notes</summary>${current.memory.source_provider?`<p>Source recollection preserved by ${escapeHTML(current.memory.source_provider)}</p>`:""}<blockquote>${escapeHTML(page.quote)}</blockquote>${page.adaptation?`<p><b>How this chapter was adapted:</b> ${escapeHTML(page.adaptation)}</p>`:""}</details></div></article>`;
   $('pageCount').textContent = `${pageIndex+1} / ${current.pages.length}`;
   $('prevPage').disabled = pageIndex === 0; $('nextPage').disabled = pageIndex === current.pages.length-1;
+  updateStickyBar();
+  if (focusHeading) $('chapterHeading').focus({preventScroll:true});
   $('editPageBtn').onclick = () => {
     $('pageProse').innerHTML = `<label>Your page<textarea id="pageEdit" maxlength="4000" rows="7">${escapeHTML(page.text)}</textarea></label>`;
     $('editPageBtn').textContent = 'Save these words';
@@ -181,7 +184,7 @@ function renderPage() {
   const count=chapterPages.reduce((sum,p)=>sum+p.text.trim().split(/\s+/).length,0);
   $('bookStats').textContent=`${chapterPages.length} chapters · ${count.toLocaleString()} words · about ${Math.max(1,Math.ceil(count/160))} minutes`;
   $('chapterList').innerHTML=chapterPages.map((p,i)=>`<button type="button" data-chapter="${i}" ${i===pageIndex?'aria-current="page"':''}><span>${String(i+1).padStart(2,'0')}</span>${escapeHTML(p.title)}</button>`).join('');
-  $('chapterList').querySelectorAll('button').forEach(button=>button.onclick=()=>{pageIndex=Number(button.dataset.chapter);renderPage();$('bookPages').scrollIntoView({block:'start'});});
+  $('chapterList').querySelectorAll('button').forEach(button=>button.onclick=()=>goToChapter(Number(button.dataset.chapter)));
   if ($('illustrateBtn')) $('illustrateBtn').onclick = async () => {
     const targetBook = current, targetPage = page;
     $('illustrateBtn').disabled = true; $('imageStatus').textContent = 'Painting your memory… this may take a minute.';
@@ -194,8 +197,45 @@ function renderPage() {
     } catch { if (current === targetBook && current.pages[pageIndex] === targetPage && $('imageStatus')) { $('imageStatus').textContent = 'Illustration unavailable. Your story is safe. Try again.'; $('illustrateBtn').disabled=false; } }
   };
 }
-$('prevPage').onclick = () => { if(pageIndex>0) {pageIndex--;renderPage();$('bookPages').scrollIntoView({block:'start'});} };
-$('nextPage').onclick = () => { if(pageIndex<current.pages.length-1) {pageIndex++;renderPage();$('bookPages').scrollIntoView({block:'start'});} };
+function reducedMotion() { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+function updateStickyBar() {
+  if (!current) return;
+  const page = current.pages[pageIndex];
+  $('stickyPrev').disabled = pageIndex === 0;
+  $('stickyNext').disabled = pageIndex === current.pages.length - 1;
+  $('stickyPage').textContent = `${String(pageIndex+1).padStart(2,'0')} / ${current.pages.length}`;
+  $('stickyTitle').textContent = page.title;
+}
+function goToChapter(index) {
+  if (!current || index < 0 || index >= current.pages.length) return;
+  pageIndex = index; renderPage(true);
+  $('bookPages').scrollIntoView({block:'start', behavior: reducedMotion() ? 'auto' : 'smooth'});
+}
+$('prevPage').onclick = () => goToChapter(pageIndex-1);
+$('nextPage').onclick = () => goToChapter(pageIndex+1);
+$('stickyPrev').onclick = () => goToChapter(pageIndex-1);
+$('stickyNext').onclick = () => goToChapter(pageIndex+1);
+function isTypingTarget(el) {
+  if (!el) return false;
+  if (el.isContentEditable) return true;
+  const tag = el.tagName;
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'AUDIO';
+}
+document.addEventListener('keydown', e => {
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+  if (!current || $('reader').hidden) return;
+  if (studio.isJudging()) return;
+  if (isTypingTarget(document.activeElement)) return;
+  if (e.key === 'ArrowLeft' && pageIndex > 0) { e.preventDefault(); goToChapter(pageIndex-1); }
+  if (e.key === 'ArrowRight' && pageIndex < current.pages.length-1) { e.preventDefault(); goToChapter(pageIndex+1); }
+});
+(() => {
+  const headerEl = document.querySelector('header');
+  let headerVisible = true, pagesVisible = false;
+  const refresh = () => { $('stickyChapterBar').hidden = $('reader').hidden || headerVisible || !pagesVisible; };
+  new IntersectionObserver(entries => { headerVisible = entries[0].isIntersecting; refresh(); }).observe(headerEl);
+  new IntersectionObserver(entries => { pagesVisible = entries[0].isIntersecting; refresh(); }).observe($('bookPages'));
+})();
 $('reviewed').onchange = async () => { current.reviewed = $('reviewed').checked; await saveBook(); };
 $('editMemoryBtn').onclick = () => {
   if(current.demo || current.curated) {begin();return;}
