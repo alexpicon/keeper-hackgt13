@@ -1,0 +1,9 @@
+# Author: Alex Picon <alexnpc@me.com>
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+.codex/

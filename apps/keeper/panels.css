@@ -1,0 +1,46 @@
+/* Author: Alex Picon <alexnpc@me.com> */
+/* The isolation atlas overlay: county dot-map, legend, model card and table. */
+
+.atlas-overlay { background: radial-gradient(900px 600px at 50% 0%, rgba(16,26,50,.98), rgba(4,7,14,.99)); align-items: flex-start; }
+.panel.atlas { max-width: 960px; width: 100%; text-align: left; position: relative; margin: 0 auto; }
+.panel.atlas .x { position: sticky; float: right; top: 0; background: rgba(6,10,22,.6); border: 1px solid var(--line); color: var(--ink); width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-size: 15px; }
+.panel.atlas h2 { font-size: clamp(24px, 4vw, 36px); }
+.atlas-sub { max-width: 720px; }
+
+.toggle { display: inline-flex; gap: 4px; background: rgba(6,10,22,.6); border: 1px solid var(--line); border-radius: 999px; padding: 4px; margin: 10px 0 14px; }
+.toggle button { border: none; background: none; color: var(--dim); padding: 7px 15px; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 600; }
+.toggle button.on { background: linear-gradient(120deg, var(--beam), var(--brass)); color: #241a05; }
+
+.mapwrap { position: relative; width: 100%; aspect-ratio: 1.78; background: radial-gradient(700px 380px at 50% 45%, #0a1224, #05070f); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.mapwrap canvas { width: 100%; height: 100%; display: block; }
+.tip { position: absolute; display: none; pointer-events: none; background: rgba(6,10,22,.94); border: 1px solid var(--line); border-radius: 10px; padding: 8px 11px; font-size: 12px; z-index: 5; max-width: 220px; box-shadow: var(--shadow); }
+.tip b { display: block; color: var(--beam); margin-bottom: 3px; font-size: 12.5px; } .tip span { display: block; color: var(--dim); }
+.legend { position: absolute; right: 14px; bottom: 12px; display: flex; align-items: center; gap: 8px; font-size: 10.5px; color: var(--dim); background: rgba(6,10,22,.55); padding: 5px 10px; border-radius: 999px; backdrop-filter: blur(6px); }
+.legend .grad { width: 110px; height: 8px; border-radius: 6px; background: linear-gradient(90deg, rgb(53,182,201), rgb(255,207,92), rgb(255,77,94)); }
+
+.mcard { margin-top: 22px; }
+.mcard h3 { font-size: 20px; margin: 0 0 6px; display: flex; align-items: center; gap: 10px; }
+.mcard .lead { color: #c3cded; font-size: 15px; line-height: 1.6; max-width: 760px; }
+.mcard .lead b { color: var(--beam); }
+.mtable { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13.5px; }
+.mtable th, .mtable td { text-align: right; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+.mtable th:first-child, .mtable td:first-child { text-align: left; }
+.mtable thead th { color: var(--dim); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .4px; }
+.mtable td { color: var(--ink); }
+.mtable tr.win td { background: rgba(255,210,122,.08); font-weight: 700; }
+.mtable tr.win td:first-child { color: var(--beam); border-left: 3px solid var(--beam); }
+
+.mgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; margin-top: 12px; }
+.mgrid h4 { font-size: 13px; text-transform: uppercase; letter-spacing: .5px; color: var(--dim); margin: 0 0 10px; }
+.mgrid p { color: var(--dim); font-size: 13px; line-height: 1.7; } .mgrid p b { color: var(--ink); } .mgrid a { color: var(--beam); }
+.imp { display: grid; grid-template-columns: 120px 1fr 40px; align-items: center; gap: 10px; margin: 6px 0; font-size: 12.5px; }
+.imp span { color: var(--dim); } .imp b { color: var(--beam); text-align: right; }
+.imp i { display: block; height: 8px; border-radius: 6px; background: linear-gradient(90deg, var(--brass), var(--beam)); min-width: 4px; }
+.lim-h { color: var(--ink) !important; font-weight: 600; margin-top: 12px !important; }
+.lim { margin: 6px 0 0; padding-left: 18px; } .lim li { color: var(--dim); font-size: 12px; line-height: 1.55; margin-bottom: 6px; }
+
+@media (max-width: 760px) {
+  .mgrid { grid-template-columns: 1fr; gap: 16px; }
+  .imp { grid-template-columns: 100px 1fr 36px; }
+  .mtable { font-size: 12px; } .mtable th, .mtable td { padding: 7px 6px; }
+}

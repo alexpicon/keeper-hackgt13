@@ -1,0 +1,58 @@
+[
+  {
+    "chapter": 1,
+    "image": "stories/lima/care/scene-1.webp",
+    "scene": "The chair by the door",
+    "provider": "xAI image generation",
+    "credit": "Alex Picon <alexnpc@me.com> · AI illustration of an explicitly fictional scene"
+  },
+  {
+    "chapter": 2,
+    "image": "stories/lima/care/chapter-02.webp",
+    "scene": "The things on the list",
+    "provider": "OpenAI imagegen",
+    "credit": "Alex Picon <alexnpc@me.com> · AI illustration of an explicitly fictional scene"
+  },
+  {
+    "chapter": 3,
+    "image": "stories/lima/care/scene-2.webp",
+    "scene": "A meal that stretched",
+    "provider": "xAI image generation",
+    "credit": "Alex Picon <alexnpc@me.com> · AI illustration of an explicitly fictional scene"
+  },
+  {
+    "chapter": 4,
+    "image": "stories/lima/care/chapter-04.webp",
+    "scene": "When patience ran out",
+    "provider": "OpenAI imagegen",
+    "credit": "Alex Picon <alexnpc@me.com> · AI illustration of an explicitly fictional scene"
+  },
+  {
+    "chapter": 5,
+    "image": "stories/lima/care/chapter-05.webp",
+    "scene": "A different pair of hands",
+    "provider": "OpenAI imagegen",
+    "credit": "Alex Picon <alexnpc@me.com> · AI illustration of an explicitly fictional scene"
+  },
+  {
+    "chapter": 6,
+    "image": "stories/lima/care/chapter-06.webp",
+    "scene": "The ordinary conversation",
+    "provider": "OpenAI imagegen",
+    "credit": "Alex Picon <alexnpc@me.com> · AI illustration of an explicitly fictional scene"
+  },
+  {
+    "chapter": 7,
+    "image": "stories/lima/care/chapter-07.webp",
+    "scene": "Another difficult morning",
+    "provider": "OpenAI imagegen",
+    "credit": "Alex Picon <alexnpc@me.com> · AI illustration of an explicitly fictional scene"
+  },
+  {
+    "chapter": 8,
+    "image": "stories/lima/care/chapter-08.webp",
+    "scene": "The people who returned",
+    "provider": "OpenAI imagegen",
+    "credit": "Alex Picon <alexnpc@me.com> · AI illustration of an explicitly fictional scene"
+  }
+]

@@ -1,0 +1,62 @@
+[
+  {
+    "chapter": 1,
+    "image": "stories/lima/bread/chapter-01.webp",
+    "scene": "A father working at the docks with other stevedores",
+    "provider": "OpenAI imagegen",
+    "credit": "Alex Picon <alexnpc@me.com> · AI illustration, not a family photograph"
+  },
+  {
+    "chapter": 2,
+    "image": "stories/lima/bread/chapter-02-carmen.webp",
+    "scene": "A father brings home bread and his four-year-old daughter thanks him; no extraneous religious pictures on the wall.",
+    "provider": "OpenAI imagegen",
+    "credit": "Alex Picon <alexnpc@me.com> · AI illustration, not a family photograph"
+  },
+  {
+    "chapter": 3,
+    "image": "stories/lima/bread/chapter-03.webp",
+    "scene": "The innocent request for butter at the table",
+    "provider": "OpenAI imagegen",
+    "credit": "Alex Picon <alexnpc@me.com> · AI illustration, not a family photograph"
+  },
+  {
+    "chapter": 4,
+    "image": "stories/lima/bread/chapter-04.webp",
+    "scene": "The father outside, quietly crying",
+    "provider": "OpenAI imagegen",
+    "credit": "Alex Picon <alexnpc@me.com> · AI illustration, not a family photograph"
+  },
+  {
+    "chapter": 5,
+    "image": "stories/lima/bread/chapter-05.webp",
+    "scene": "Grandma walking home in prayer",
+    "provider": "OpenAI imagegen",
+    "credit": "Alex Picon <alexnpc@me.com> · AI illustration, not a family photograph"
+  },
+  {
+    "chapter": 6,
+    "image": "stories/lima/bread/chapter-06.webp",
+    "scene": "Grandma finding the large bill",
+    "provider": "OpenAI imagegen",
+    "credit": "Alex Picon <alexnpc@me.com> · AI illustration, not a family photograph"
+  },
+  {
+    "chapter": 7,
+    "image": "stories/lima/bread/chapter-07-carmen.webp",
+    "scene": "Grandma describing her faith beside a devotional image of la Virgen del Carmen de la Legua, Callao, Peru: crowned Virgin in brown Carmelite habit with ivory lace mantle, holding the crowned Niño Jesús.",
+    "provider": "OpenAI imagegen",
+    "credit": "Alex Picon <alexnpc@me.com> · AI illustration, not a family photograph",
+    "references": [
+      "https://www.diocesisdelcallao.org/advocaciones/virgen-del-carmen-de-la-legua",
+      "https://www.virgencarmendelalegua.com.pe/"
+    ]
+  },
+  {
+    "chapter": 8,
+    "image": "stories/lima/bread/chapter-08.webp",
+    "scene": "Grandma passing the story to her grandchild",
+    "provider": "OpenAI imagegen",
+    "credit": "Alex Picon <alexnpc@me.com> · AI illustration, not a family photograph"
+  }
+]

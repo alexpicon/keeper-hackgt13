@@ -1,0 +1,58 @@
+[
+  {
+    "chapter": 1,
+    "image": "stories/lima/port/scene-1.webp",
+    "scene": "Before the first load",
+    "provider": "xAI image generation",
+    "credit": "Alex Picon <alexnpc@me.com> · AI illustration of an explicitly fictional scene"
+  },
+  {
+    "chapter": 2,
+    "image": "stories/lima/port/chapter-02.webp",
+    "scene": "Learning the crew",
+    "provider": "OpenAI imagegen",
+    "credit": "Alex Picon <alexnpc@me.com> · AI illustration of an explicitly fictional scene"
+  },
+  {
+    "chapter": 3,
+    "image": "stories/lima/port/chapter-03.webp",
+    "scene": "A day that wanted to hurry",
+    "provider": "OpenAI imagegen",
+    "credit": "Alex Picon <alexnpc@me.com> · AI illustration of an explicitly fictional scene"
+  },
+  {
+    "chapter": 4,
+    "image": "stories/lima/port/scene-2.webp",
+    "scene": "The shout",
+    "provider": "xAI image generation",
+    "credit": "Alex Picon <alexnpc@me.com> · AI illustration of an explicitly fictional scene"
+  },
+  {
+    "chapter": 5,
+    "image": "stories/lima/port/chapter-05.webp",
+    "scene": "What counted as work",
+    "provider": "OpenAI imagegen",
+    "credit": "Alex Picon <alexnpc@me.com> · AI illustration of an explicitly fictional scene"
+  },
+  {
+    "chapter": 6,
+    "image": "stories/lima/port/chapter-06.webp",
+    "scene": "The call home",
+    "provider": "OpenAI imagegen",
+    "credit": "Alex Picon <alexnpc@me.com> · AI illustration of an explicitly fictional scene"
+  },
+  {
+    "chapter": 7,
+    "image": "stories/lima/port/scene-3.webp",
+    "scene": "Bread divided at the gate",
+    "provider": "xAI image generation",
+    "credit": "Alex Picon <alexnpc@me.com> · AI illustration of an explicitly fictional scene"
+  },
+  {
+    "chapter": 8,
+    "image": "stories/lima/port/chapter-08.webp",
+    "scene": "The story worth telling",
+    "provider": "OpenAI imagegen",
+    "credit": "Alex Picon <alexnpc@me.com> · AI illustration of an explicitly fictional scene"
+  }
+]

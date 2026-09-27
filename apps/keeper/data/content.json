@@ -1,0 +1,57 @@
+{
+  "headline": {
+    "big": "1 in 5",
+    "unit": "adults 65+ have no smartphone",
+    "detail": "Pew Research measured 78% smartphone ownership among U.S. adults 65+ in 2025; the rest carry a basic cellphone or nothing at all — shut out of every app- and headset-based way to reach family. That gap is why Keeper exists.",
+    "source": "Pew Research Center — Mobile Fact Sheet, 2025",
+    "url": "https://www.pewresearch.org/internet/fact-sheet/mobile/"
+  },
+  "stats": [
+    {
+      "value": "1 in 3",
+      "label": "U.S. adults report feeling lonely",
+      "note": "34% of adults, population-weighted across 2,299 counties in CDC's 2025 loneliness map; the median county rate is 32.6%.",
+      "source": "CDC PLACES 2025 — Loneliness among adults, by county",
+      "url": "https://data.cdc.gov/500-Cities-Places/PLACES-Local-Data-for-Better-Health-County-Data-20/swc5-untb"
+    },
+    {
+      "value": "≈15 cigarettes",
+      "label": "a day — the risk of disconnection",
+      "note": "The 2023 U.S. Surgeon General advisory puts the mortality risk of social disconnection on par with smoking up to 15 cigarettes a day.",
+      "source": "U.S. Surgeon General Advisory on Loneliness and Isolation, 2023",
+      "url": "https://www.hhs.gov/surgeon-general/priorities/connection/index.html"
+    }
+  ],
+  "memoryPrompts": [
+    "Abuela, tell Sofia about a boat, a beach, or the sea from when you were young.",
+    "Abuela, what is one sound from your childhood that still means home?",
+    "Abuela, tell Sofia about the night you were most afraid — and who guided you."
+  ],
+  "album": [
+    {
+      "date": "Sun voyage",
+      "en": "The church in our town had two bells. One for morning, a deeper one for storms.",
+      "es": "La iglesia de nuestro pueblo tenía dos campanas. Una para la mañana, otra más grave para las tormentas.",
+      "teller": "Rosa, 74"
+    },
+    {
+      "date": "Last Sunday",
+      "en": "Your grandfather fished at night. I'd leave a lamp in the window so he could find the shore.",
+      "es": "Tu abuelo pescaba de noche. Yo dejaba una lámpara en la ventana para que encontrara la orilla.",
+      "teller": "Rosa, 74"
+    }
+  ],
+  "phrases": [
+    { "en": "Swing the light left.", "es": "Mueve la luz a la izquierda.", "act": "beamLeft", "key": "4" },
+    { "en": "Swing the light right.", "es": "Mueve la luz a la derecha.", "act": "beamRight", "key": "6" },
+    { "en": "Sound the horn.", "es": "Toca la bocina.", "act": "foghorn", "key": "8" },
+    { "en": "Toward the bell.", "es": "Hacia la campana.", "act": "sayBell", "key": "7" },
+    { "en": "Slow down, mija.", "es": "Más despacio, mija.", "act": "saySlow", "key": "1" },
+    { "en": "The harbor is ahead.", "es": "El puerto está adelante.", "act": "sayHarbor", "key": "9" }
+  ],
+  "radio": [
+    { "en": "I see it!", "es": "¡Ya lo veo!" },
+    { "en": "Turning now.", "es": "Girando." },
+    { "en": "Made it home.", "es": "Llegué a casa." }
+  ]
+}

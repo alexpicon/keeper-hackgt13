@@ -1,0 +1,10 @@
+# Author: Alex Picon <alexnpc@me.com>
+[project]
+name = "keeper-hackgt13"
+version = "0.1.0"
+description = "Family memories in their own voice, illustrated and narrated"
+authors = [{name = "Alexander Picon", email = "alexnpc@me.com"}]
+requires-python = ">=3.12"
+dependencies = ["fastapi>=0.115", "httpx>=0.28", "python-dotenv>=1.2", "python-multipart>=0.0.20", "uvicorn[standard]>=0.34"]
+[dependency-groups]
+dev = ["playwright>=1.51", "pillow>=11"]

@@ -1,0 +1,129 @@
+{
+  "generated": "2026-09-26",
+  "n_counties": 2299,
+  "n_states": 39,
+  "target": "CDC PLACES 2025 county loneliness (crude prevalence)",
+  "target_url": "https://data.cdc.gov/500-Cities-Places/PLACES-Local-Data-for-Better-Health-County-Data-20/swc5-untb",
+  "validation": "5-fold GroupKFold with each county's own state held out",
+  "baselines": {
+    "no_internet": "% of households with no internet (SVI, single indicator)",
+    "svi": "CDC/ATSDR Social Vulnerability Index overall percentile"
+  },
+  "results": {
+    "model": {
+      "r2": 0.609,
+      "spearman": 0.781,
+      "mae": 1.54,
+      "decile_recall": 0.491,
+      "decile_capture": 0.174
+    },
+    "no_internet": {
+      "r2": 0.017,
+      "spearman": 0.137,
+      "mae": 2.44,
+      "decile_recall": 0.274,
+      "decile_capture": 0.017
+    },
+    "svi": {
+      "r2": 0.394,
+      "spearman": 0.629,
+      "mae": 1.95,
+      "decile_recall": 0.357,
+      "decile_capture": 0.088
+    }
+  },
+  "national": {
+    "pop_weighted_loneliness": 34.1,
+    "median_county": 32.6,
+    "loneliest_county": "Clayton County, GA",
+    "loneliest_value": 43.4
+  },
+  "importances": [
+    {
+      "feature": "EP_NOHSDP",
+      "label": "No HS diploma",
+      "gain": 0.317
+    },
+    {
+      "feature": "EP_AGE65",
+      "label": "Aged 65+",
+      "gain": 0.15
+    },
+    {
+      "feature": "EP_SNGPNT",
+      "label": "Single-parent homes",
+      "gain": 0.127
+    },
+    {
+      "feature": "EP_POV150",
+      "label": "Below 150% poverty",
+      "gain": 0.071
+    },
+    {
+      "feature": "EP_UNEMP",
+      "label": "Unemployed",
+      "gain": 0.064
+    },
+    {
+      "feature": "EP_HBURD",
+      "label": "Housing-cost burden",
+      "gain": 0.041
+    },
+    {
+      "feature": "EP_MOBILE",
+      "label": "Mobile homes",
+      "gain": 0.039
+    },
+    {
+      "feature": "EP_NOVEH",
+      "label": "No vehicle",
+      "gain": 0.036
+    },
+    {
+      "feature": "EP_AGE17",
+      "label": "Aged 17 and under",
+      "gain": 0.031
+    },
+    {
+      "feature": "EP_NOINT",
+      "label": "No home internet",
+      "gain": 0.024
+    },
+    {
+      "feature": "EP_UNINSUR",
+      "label": "Uninsured",
+      "gain": 0.022
+    },
+    {
+      "feature": "EP_GROUPQ",
+      "label": "Group quarters",
+      "gain": 0.018
+    },
+    {
+      "feature": "EP_MUNIT",
+      "label": "Multi-unit housing",
+      "gain": 0.016
+    },
+    {
+      "feature": "EP_CROWD",
+      "label": "Crowded housing",
+      "gain": 0.016
+    },
+    {
+      "feature": "EP_DISABL",
+      "label": "With a disability",
+      "gain": 0.015
+    },
+    {
+      "feature": "EP_LIMENG",
+      "label": "Limited English",
+      "gain": 0.014
+    }
+  ],
+  "limitations": [
+    "CDC's loneliness question comes from an optional BRFSS module, so only 39 states and DC report it; states that did not field it (including TX, FL and PA) are absent from the map and the backtest.",
+    "The target is itself a BRFSS small-area model, not a direct census of loneliness, so the backtest measures how well county structure explains CDC's modelled loneliness surface.",
+    "Loneliness varies less across counties than crashes do across streets, so gains over baselines show as ranking quality, not a PathPulse-style concentration of a rare event.",
+    "County-level results are ecological and say nothing about any individual person."
+  ]
+}
