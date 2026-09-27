@@ -14,6 +14,14 @@ async function readData(blob) {
 export function createVoiceStudio(hooks) {
   let bookId=null, language='Original', activeClip=null, words=[], latestTranscript=null, interviewQuestions=[], judgeIndex=0, judging=false, voiceRequest=0, interviewRequest=0;
   const chapterAudio=$('chapterAudio');
+  const studioElement=document.querySelector('.voice-studio');
+  const studioHome=document.createComment('Listening room position');
+  studioElement.before(studioHome);
+  function judgeLayout(active){
+    $('reader').classList.toggle('judge-reading',active);
+    if(active)document.querySelector('.book-contents').before(studioElement);
+    else studioHome.after(studioElement);
+  }
   const selectedPage=()=>hooks.book()?.pages[hooks.pageIndex()];
   const englishOriginal=()=>Boolean(collectionSlug(hooks.book())||hooks.book()?.demo||['en','eng','English'].includes(hooks.book()?.transcript?.language||hooks.book()?.memory?.language));
   const usesOriginal=()=>language==='Original'||(language==='English'&&englishOriginal()&&!hooks.book()?.translations?.English);
@@ -218,7 +226,7 @@ export function createVoiceStudio(hooks) {
   const isFamilyDemo=()=>hooks.book()?.provenance?.kind==='woven-recollections';
   function judgeStep(){
     const family=isFamilyDemo(),judgeSteps=family?familyJudgeSteps:legacyJudgeSteps;
-    judging=true;$('judgePanel').hidden=false;
+    judging=true;judgeLayout(true);$('judgePanel').hidden=false;
     const [title,description,evidence]=judgeSteps[judgeIndex];$('judgeTitle').textContent=title;$('judgeDescription').textContent=description;$('judgeEvidence').textContent=evidence;$('judgeStep').textContent=`${judgeIndex+1} / ${judgeSteps.length} · about 90 seconds`;
     $('judgeAction').textContent=(family?['Listen to her telling ♪','Read the butter chapter ↓','Read her faith story ↓','Listen in Spanish ♪','Review and download ↓']:['Play the source ♪','Play the chapter ♪','Show the source excerpt ↓','Listen in Spanish ♪','Review and download ↓'])[judgeIndex];
     $('judgePrev').disabled=judgeIndex===0;$('judgeNext').textContent=judgeIndex===judgeSteps.length-1?'Start again ↻':'Next moment →';
@@ -237,15 +245,15 @@ export function createVoiceStudio(hooks) {
   };
   $('judgePrev').onclick=()=>{judgeIndex=Math.max(0,judgeIndex-1);judgeStep();};
   $('judgeNext').onclick=()=>{judgeIndex=(judgeIndex+1)%5;judgeStep();};
-  $('judgeExit').onclick=()=>{judging=false;$('judgePanel').hidden=true;stop();hooks.routeChanged?.();};
+  $('judgeExit').onclick=()=>{judging=false;judgeLayout(false);$('judgePanel').hidden=true;stop();hooks.routeChanged?.();};
   async function openExample(judge=false,path='stories/lima/bread/book.json',canApply=()=>true){
     stop();
-    try {const response=await fetch(path,{cache:'no-store'});if(!response.ok)throw new Error();const book=await response.json();if(!canApply())return;hooks.open(book);if(judge){judgeIndex=0;judgeStep();}else{$('judgePanel').hidden=true;judging=false;}}
+    try {const response=await fetch(path,{cache:'no-store'});if(!response.ok)throw new Error();const book=await response.json();if(!canApply())return;hooks.open(book);if(judge){judgeIndex=0;judgeStep();}else{$('judgePanel').hidden=true;judging=false;judgeLayout(false);}}
     catch{if(!canApply())return;hooks.openFallback();if(judge){$('readerStatus').textContent='Prepared voice demo is unavailable. The example book and live voice tools still work.';}}
   }
   return {render,stop,resetCapture,openExample,isJudging:()=>judging,
     selectEdition(value){if(value==='Original'||(value==='English'&&englishOriginal())||hooks.book()?.translations?.[value]){chooseEdition(value);hooks.render();}},
-    onView(view){stop();if(view!=='capture')interviewRequest++;if(view!=='reader'){voiceRequest++;judging=false;$('judgePanel').hidden=true;}},
+    onView(view){stop();if(view!=='capture')interviewRequest++;if(view!=='reader'){voiceRequest++;judging=false;judgeLayout(false);$('judgePanel').hidden=true;}},
     invalidate(){const book=hooks.book();delete book.prepared_audio;book.translations={};for(const page of book.pages)page.narrations={};chooseEdition('Original');},
     canExport(){if(!usesOriginal()&&!hooks.book()?.translations?.[language]?.reviewed){$('readerStatus').textContent='Review this translated edition before sharing, or switch back to Original language.';$('translationReviewed').focus();return false;}return true;},
     exportState(){return {language:audioLanguage(),voice:$('narratorVoice').value,edition:usesOriginal()?null:hooks.book()?.translations?.[language]};}

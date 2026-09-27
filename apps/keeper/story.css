@@ -49,3 +49,15 @@ select{font:inherit;color:var(--ink);background:#fffcf5;border:1px solid var(--c
 .sticky-chapter-bar .sticky-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;color:var(--ink)}
 .sticky-chapter-bar .sticky-page{flex-shrink:0}
 @media(max-width:600px){.sticky-chapter-bar{padding:0 8px}.sticky-chapter-bar .sticky-title{display:none}.sticky-chapter-bar button{font-size:12px;padding:8px 6px}}
+
+/* Keep the player, chapter navigation, and read-along together during the judge tour. */
+.judge-reading .voice-studio{padding:14px 20px;margin:16px 0}
+.judge-reading .studio-heading{margin-bottom:6px}
+.judge-reading .studio-heading h3{margin:0;font-size:22px}
+.judge-reading .voice-studio #voiceStatus{margin:6px 0;font-size:11px}
+.judge-reading .book-contents{margin:16px 0;padding:12px 0}
+.judge-reading #regenerateNarrationBtn{padding:3px 0;font-size:11px}
+.judge-reading .page-text{padding:24px 28px}
+.judge-reading .page-text h2{font-size:32px;margin:12px 0}
+.judge-reading .prose{font-size:17px;line-height:1.5}
+.judge-reading #chapterList button{padding:8px 10px}

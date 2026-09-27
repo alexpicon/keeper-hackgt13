@@ -63,8 +63,12 @@ def main():
     print('Narration prepared; capturing the actual app for',round(sum(durations)),'seconds.',flush=True)
     with sync_playwright() as p:
         browser=p.chromium.launch(args=['--no-sandbox'])
-        context=browser.new_context(viewport={'width':1280,'height':800},record_video_dir=str(WORK),record_video_size={'width':1280,'height':800})
+        context=browser.new_context(viewport={'width':1280,'height':960},record_video_dir=str(WORK),record_video_size={'width':1280,'height':960})
         page=context.new_page()
+        def frame_reading():
+            page.locator('.voice-studio').evaluate('(e)=>e.scrollIntoView({block:"start",behavior:"instant"})')
+            page.wait_for_function('''() => {const prose=document.getElementById('pageProse').getBoundingClientRect();const player=document.getElementById('chapterAudio').getBoundingClientRect();const chapters=document.getElementById('chapterList').getBoundingClientRect();return player.top>=0&&player.bottom<innerHeight&&chapters.top>=0&&prose.top<innerHeight-100;}''')
+            page.wait_for_function('''() => [...document.querySelectorAll('.spoken-word.active')].some(e=>{const r=e.getBoundingClientRect();return r.top>=0&&r.bottom<innerHeight;})''')
         def segment(i, action):
             started=time.monotonic();action();page.wait_for_timeout(max(0,(durations[i]-(time.monotonic()-started))*1000))
             print('Captured scene',i+1,flush=True)
@@ -75,6 +79,7 @@ def main():
             expect(page.locator('#chapterAudio')).to_be_visible()
             page.locator('#judgeAction').click()
             page.wait_for_function('document.getElementById("chapterAudio").currentTime>0.1')
+            frame_reading()
         segment(1,source)
         def listen():
             page.locator('#judgeNext').click();page.locator('#judgeAction').click()
@@ -88,6 +93,7 @@ def main():
             expect(page.locator('#chapterAudio')).to_be_visible()
             page.locator('#judgeAction').click()
             page.wait_for_function('document.getElementById("chapterAudio").currentTime>0.1')
+            frame_reading()
         segment(4,spanish)
         def export():
             page.locator('#judgeNext').click();page.locator('#shareLinkBtn').click();page.locator('#translationReviewed').check();page.locator('#reviewed').check()
@@ -96,6 +102,7 @@ def main():
             download.value.save_as(WORK/'example-book.html')
             if (WORK/'example-book.html').read_text().count('<audio controls src="data:') != 8: raise RuntimeError('Missing prepared export narration')
         segment(5,export)
+        page.wait_for_timeout(1200)
         video=page.video;context.close();video_path=video.path();browser.close()
     subprocess.run(['ffmpeg','-y','-v','error','-i',str(video_path),'-i',str(WORK/'narration.wav'),'-map','0:v:0','-map','1:a:0','-c:v','libx264','-preset','fast','-crf','29','-pix_fmt','yuv420p','-c:a','aac','-b:a','96k','-shortest','-metadata','artist=Alex Picon <alexnpc@me.com>','-metadata','comment=Keeper narrated walkthrough; reconstructed family telling; generated ElevenLabs reading voice','-movflags','+faststart',str(OUT)],check=True)
     if OUT.stat().st_size>10*1024*1024:
