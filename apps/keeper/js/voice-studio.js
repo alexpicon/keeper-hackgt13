@@ -15,10 +15,13 @@ export function createVoiceStudio(hooks) {
   let bookId=null, language='Original', activeClip=null, words=[], latestTranscript=null, interviewQuestions=[], judgeIndex=0, judging=false, voiceRequest=0, interviewRequest=0;
   const chapterAudio=$('chapterAudio');
   const selectedPage=()=>hooks.book()?.pages[hooks.pageIndex()];
-  const editionPage=()=>language==='Original'?selectedPage():hooks.book()?.translations?.[language]?.pages[hooks.pageIndex()];
+  const englishOriginal=()=>Boolean(collectionSlug(hooks.book())||hooks.book()?.demo||['en','eng','English'].includes(hooks.book()?.transcript?.language||hooks.book()?.memory?.language));
+  const usesOriginal=()=>language==='Original'||(language==='English'&&englishOriginal()&&!hooks.book()?.translations?.English);
+  const audioLanguage=()=>usesOriginal()?'Original':language;
+  const editionPage=()=>usesOriginal()?selectedPage():hooks.book()?.translations?.[language]?.pages[hooks.pageIndex()];
   const defaultVoice=(edition)=>edition==='Spanish'?'tina':'rachel';
   const chooseEdition=(edition)=>{language=edition;$('editionSelect').value=edition;$('narratorVoice').value=defaultVoice(edition);};
-  const narrationKey=()=>`${language}:${$('narratorVoice').value}`;
+  const narrationKey=()=>`${audioLanguage()}:${$('narratorVoice').value}`;
   const preparedRequests=new WeakMap();
   async function hydratePrepared(book) {
     if(!book)return;
@@ -84,20 +87,20 @@ export function createVoiceStudio(hooks) {
     voiceRequest++;stop();resetBook();activeClip=null;words=[];
     chapterAudio.hidden=true;chapterAudio.removeAttribute('src');$('downloadAudioBtn').hidden=true;$('regenerateNarrationBtn').hidden=true;
     const book=hooks.book(), page=selectedPage(), edition=editionPage();
-    const translated=language!=='Original'&&Boolean(edition);
-    $('translateBtn').disabled=language==='Original';$('translateBtn').textContent=translated?'Translate again live':'Create translated edition';
+    const translated=!usesOriginal()&&Boolean(edition);
+    $('translateBtn').disabled=usesOriginal();$('translateBtn').textContent=translated?'Translate again live':'Create translated edition';
     $('translationReview').hidden=!translated;$('translationReviewed').checked=translated&&Boolean(book.translations[language].reviewed);
     $('narrateBtn').disabled=!edition;$('narrateBtn').textContent='Generate narration ♪';
     $('bookTitle').textContent=translated?book.translations[language].title:book.title;
     if(translated){document.querySelector('.page-text h2').textContent=edition.title;$('pageProse').textContent=edition.text;}
-    $('editPageBtn').hidden=language!=='Original';
+    $('editPageBtn').hidden=!usesOriginal();
     const clip=page?.narrations?.[narrationKey()];
     $('voiceProvenance').textContent=clip?.prepared?(clip.provenance || 'Prepared ElevenLabs audio · fictional example'):'ElevenLabs · generated narrator';
     $('voiceStatus').textContent=!edition?'Create this edition to read and hear it. Your original will stay alongside it.':translated?`${language} edition · ${book.translations[language].prepared?'prepared demo translation':'Grok translation'} · check names and meaning with your family.`:'Narration is a generated reading voice. Your original recording stays separate.';
     if(clip&&clip.text===edition?.text)loadClip(clip,false);
     else void hydratePrepared(book);
     const allReady=['Original','Spanish'].every(lang=>book.pages.every((p,i)=>{const audio=p.narrations?.[`${lang}:${defaultVoice(lang)}`];const text=lang==='Original'?p.text:book.translations?.Spanish?.pages[i]?.text;return audio?.prepared&&audio.text===text;}));
-    if(allReady&&$('narratorVoice').value===defaultVoice(language)&&['Original','Spanish'].includes(language))$('voiceStatus').textContent=`All ${book.pages.length} chapters are prebuilt in English and Spanish with ElevenLabs. Press play—no generation needed.`;
+    if(allReady&&$('narratorVoice').value===defaultVoice(language)&&['Original','English','Spanish'].includes(language))$('voiceStatus').textContent=`All ${book.pages.length} chapters are prebuilt in English and Spanish with ElevenLabs. Press play—no generation needed.`;
   }
   function loadClip(clip,play) {
     activeClip=clip;chapterAudio.src=clip.audio;chapterAudio.hidden=false;$('downloadAudioBtn').hidden=false;
@@ -140,7 +143,7 @@ export function createVoiceStudio(hooks) {
   $('editionSelect').onchange=()=>{chooseEdition($('editionSelect').value);hooks.render();};
   $('translateBtn').onclick=async()=>{
     const book=hooks.book(),target=language,source=JSON.stringify(book.pages.map(p=>({title:p.title,text:p.text})));
-    if(target==='Original')return;
+    if(usesOriginal())return;
     $('translateBtn').disabled=true;$('voiceStatus').textContent=`Creating a ${target} edition with Grok…`;
     try {
       const result=await request('translate',{language:target,title:book.title,pages:JSON.parse(source)});
@@ -149,7 +152,7 @@ export function createVoiceStudio(hooks) {
       for(const page of book.pages)for(const key of Object.keys(page.narrations||{}))if(key.startsWith(target+':'))delete page.narrations[key];
       await hooks.save();hooks.render();
     }catch(error){$('voiceStatus').textContent=error.message;}
-    finally{$('translateBtn').disabled=language==='Original';}
+    finally{$('translateBtn').disabled=usesOriginal();}
   };
   $('translationReviewed').onchange=async()=>{const edition=hooks.book()?.translations?.[language];if(edition){edition.reviewed=$('translationReviewed').checked;await hooks.save();}};
   $('downloadAudioBtn').onclick=async()=>{
@@ -241,10 +244,10 @@ export function createVoiceStudio(hooks) {
     catch{if(!canApply())return;hooks.openFallback();if(judge){$('readerStatus').textContent='Prepared voice demo is unavailable. The example book and live voice tools still work.';}}
   }
   return {render,stop,resetCapture,openExample,isJudging:()=>judging,
-    selectEdition(value){if(value==='Original'||hooks.book()?.translations?.[value]){chooseEdition(value);hooks.render();}},
+    selectEdition(value){if(value==='Original'||(value==='English'&&englishOriginal())||hooks.book()?.translations?.[value]){chooseEdition(value);hooks.render();}},
     onView(view){stop();if(view!=='capture')interviewRequest++;if(view!=='reader'){voiceRequest++;judging=false;$('judgePanel').hidden=true;}},
     invalidate(){const book=hooks.book();delete book.prepared_audio;book.translations={};for(const page of book.pages)page.narrations={};chooseEdition('Original');},
-    canExport(){if(language!=='Original'&&!hooks.book()?.translations?.[language]?.reviewed){$('readerStatus').textContent='Review this translated edition before sharing, or switch back to Original language.';$('translationReviewed').focus();return false;}return true;},
-    exportState(){return {language,voice:$('narratorVoice').value,edition:language==='Original'?null:hooks.book()?.translations?.[language]};}
+    canExport(){if(!usesOriginal()&&!hooks.book()?.translations?.[language]?.reviewed){$('readerStatus').textContent='Review this translated edition before sharing, or switch back to Original language.';$('translationReviewed').focus();return false;}return true;},
+    exportState(){return {language:audioLanguage(),voice:$('narratorVoice').value,edition:usesOriginal()?null:hooks.book()?.translations?.[language]};}
   };
 }

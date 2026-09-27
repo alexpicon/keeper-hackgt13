@@ -30,6 +30,18 @@ def main():
             page.locator('#editionSelect').select_option('Spanish');expect(page.locator('#narratorVoice')).to_have_value('tina');expect(page.locator('#chapterAudio')).to_be_visible()
             page.locator('#narrateBtn').click();page.wait_for_function('document.getElementById("chapterAudio").currentTime>0.05')
             assert not calls,calls
+            page.locator('#editionSelect').select_option('English')
+            expect(page.locator('#narratorVoice')).to_have_value('rachel')
+            expect(page.locator('#chapterAudio')).to_be_visible()
+            english_audio=page.locator('#chapterAudio').get_attribute('src')
+            expect(page.locator('#translateBtn')).to_be_disabled()
+            page.locator('#narratorVoice').select_option('tina')
+            page.locator('#editionSelect').select_option('Original')
+            expect(page.locator('#narratorVoice')).to_have_value('rachel')
+            expect(page.locator('#chapterAudio')).to_have_attribute('src',english_audio)
+            page.locator('#narrateBtn').click()
+            page.wait_for_function('document.getElementById("chapterAudio").currentTime>0.05')
+            assert not calls,calls
             page.reload()
             if edited:
                 expect(page.locator('#pageProse')).to_have_text(old['pages'][0]['text'])
