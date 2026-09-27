@@ -21,3 +21,9 @@ The prepared collection works without API keys. New story generation and transla
 See [app documentation](apps/keeper/README.md) and [demo script](slides/keeper/DEMO.md).
 
 Extracted from the collaborative HackGT 13 repository. No other application or repository is required to run Keeper. Environment files and credentials are excluded from Git.
+
+## Production
+
+Live app: https://keeper-ai.tech/keeper/
+
+Every push to `main` runs tests and deploys the exact commit to Vultr. Failed health checks restore the previous container. See [deployment instructions](deploy/README.md). The private `.env` lives at the project root locally and `/opt/keeper/shared/.env` on the server; it is excluded from Git and preserved across releases.

@@ -39,6 +39,20 @@ fi
 if run_app keeper 8888 && healthy 8888; then
   echo "$revision" > deployed-revision
   echo "Deployed $revision"
+  # Bound disk growth: retain only current and rollback images/releases.
+  previous_image=$(docker inspect -f '{{.Config.Image}}' keeper-previous 2>/dev/null || true)
+  while IFS= read -r old_image; do
+    if [[ "$old_image" != "$image" && "$old_image" != "$previous_image" ]]; then
+      docker image rm "$old_image" >/dev/null 2>&1 || true
+    fi
+  done < <(docker images keeper --format '{{.Repository}}:{{.Tag}}')
+  for old_release in releases/*; do
+    old_revision=${old_release##*/}
+    if [[ "$old_revision" =~ ^[0-9a-f]{40}$ && "$old_revision" != "$revision" && "keeper:$old_revision" != "$previous_image" ]]; then
+      rm -rf -- "$old_release"
+    fi
+  done
+  docker builder prune -f --keep-storage 1GB >/dev/null 2>&1 || true
 else
   docker rm -f keeper >/dev/null 2>&1 || true
   if docker inspect keeper-previous >/dev/null 2>&1; then
