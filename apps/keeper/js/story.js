@@ -6,7 +6,7 @@ const escapeHTML = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;'
 const prompts = ['Tell me about someone at work who looked out for you.', 'What did your family do when money was short?', 'Tell me about a friendship that helped you through.', 'What happened on a day when everything went wrong?', 'Who showed up for the family during an illness?', 'Which story do you most want the next generation to know?'];
 const rememberedPrompts = ['What small habit of theirs do you still remember?', 'What story did they tell more than once?', 'What was their kitchen like?', 'What is a saying you associate with them?', 'What did they tell you about the world they grew up in?', 'What did they teach you that you still do today?'];
 function updatePrompt() { const choices = document.querySelector('input[name=perspective]:checked').value === 'remembered' ? rememberedPrompts : prompts; $('promptText').textContent = choices[promptIndex % choices.length]; }
-let promptIndex = 0, books = [], current = null, pageIndex = 0, draftAudio = null, recorder = null, recognition = null, stream = null, timer = null, editingId = null, storageOK = true;
+let promptIndex = 0, books = [], current = null, pageIndex = 0, draftAudio = null, recorder = null, recognition = null, stream = null, timer = null, editingId = null, storageOK = true, familyCollection = null;
 let routingReady = false, applyingRoute = false, routeEpoch = 0;
 let draftTranscript = null;
 let draftTimer = null, audioReady = Promise.resolve(), recordingGeneration = 0;
@@ -166,11 +166,18 @@ function renderBook() {
 }
 function renderPage(focusHeading = false) {
   const page = current.pages[pageIndex];
-  $('bookPages').innerHTML = `<article class="spread"><div class="page-art"><div class="art-frame">${page.image ? `<figure class="art-mat"><img src="${escapeHTML(page.image)}" alt="AI watercolor interpretation of this memory"></figure><p class="art-label">AI illustration · an interpretation, not a photograph</p>` : `<div class="art-empty">A little room<br>for your imagination.</div><p>Create a watercolor illustration from this page.<br>The illustration prompt will be sent to xAI.</p><button class="secondary" id="illustrateBtn" ${!page.illustration ? 'disabled' : ''}>Illustrate this page ✳</button><p id="imageStatus" role="status"></p>`}</div></div><div class="page-text"><span class="eyebrow">CHAPTER ${String(pageIndex+1).padStart(2,'0')}</span><h2 id="chapterHeading" tabindex="-1">${escapeHTML(page.title)}</h2><div class="prose" id="pageProse">${escapeHTML(page.text)}</div><button id="editPageBtn" class="text-btn underline">Edit these words</button><details class="source-quote"><summary>Source & adaptation notes</summary>${current.memory.source_provider?`<p>Source recollection preserved by ${escapeHTML(current.memory.source_provider)}</p>`:""}<blockquote>${escapeHTML(page.quote)}</blockquote>${page.adaptation?`<p><b>How this chapter was adapted:</b> ${escapeHTML(page.adaptation)}</p>`:""}</details></div></article>`;
+  $('bookPages').innerHTML = `<article class="spread"><div class="page-art"><div class="art-frame">${page.image ? `<figure class="art-mat"><img src="${escapeHTML(page.image)}" alt="AI watercolor interpretation of this memory"></figure><p class="art-label">AI illustration · an interpretation, not a photograph</p>` : `<div class="art-empty">A little room<br>for your imagination.</div><p>Create a watercolor illustration from this page.<br>The illustration prompt will be sent to xAI.</p><button class="secondary" id="illustrateBtn" ${!page.illustration ? 'disabled' : ''}>Illustrate this page ✳</button><p id="imageStatus" role="status"></p>`}</div></div><div class="page-text"><span class="eyebrow">CHAPTER ${String(pageIndex+1).padStart(2,'0')}</span><h2 id="chapterHeading" tabindex="-1">${escapeHTML(page.title)}</h2><button type="button" id="listenChapterLink" class="text-btn underline listen-chapter-link">▶ Listen to this chapter</button><div class="prose" id="pageProse">${escapeHTML(page.text)}</div><button id="editPageBtn" class="text-btn underline">Edit these words</button><details class="source-quote"><summary>Source & adaptation notes</summary>${current.memory.source_provider?`<p>Source recollection preserved by ${escapeHTML(current.memory.source_provider)}</p>`:""}<blockquote>${escapeHTML(page.quote)}</blockquote>${page.adaptation?`<p><b>How this chapter was adapted:</b> ${escapeHTML(page.adaptation)}</p>`:""}</details></div></article>`;
   $('pageCount').textContent = `${pageIndex+1} / ${current.pages.length}`;
   $('prevPage').disabled = pageIndex === 0; $('nextPage').disabled = pageIndex === current.pages.length-1;
   updateStickyBar();
   if (focusHeading) $('chapterHeading').focus({preventScroll:true});
+  $('listenChapterLink').onclick = () => {
+    const studioEl = document.querySelector('.voice-studio');
+    studioEl.scrollIntoView({block:'start', behavior: reducedMotion() ? 'auto' : 'smooth'});
+    const chapterAudio = $('chapterAudio');
+    if (!chapterAudio.hidden && chapterAudio.src) chapterAudio.play().catch(()=>{});
+    else $('narrateBtn').focus();
+  };
   $('editPageBtn').onclick = () => {
     $('pageProse').innerHTML = `<label>Your page<textarea id="pageEdit" maxlength="4000" rows="7">${escapeHTML(page.text)}</textarea></label>`;
     $('editPageBtn').textContent = 'Save these words';
@@ -268,8 +275,16 @@ $('resumeBtn').onclick=async()=>{
 async function showShelf() {
   try { books = (await database('readonly', store => store.getAll())).sort((a,b)=>b.created.localeCompare(a.created)); } catch { storageOK=false; }
   $('shelfCount').textContent=books.length;
-  $('shelfBooks').innerHTML=books.length ? books.map(b=>`<article class="shelf-card">${b.pages[0].image ? `<img src="${escapeHTML(b.pages[0].image)}" alt="AI illustration for this story">` : '<span class="small-star">✳</span>'}<p class="eyebrow">${b.reviewed ? 'FAMILY REVIEWED' : 'DRAFT · READY TO REVIEW'}</p><h2>${escapeHTML(b.title)}</h2><p>${escapeHTML(attribution(b))}</p><button class="text-btn underline" data-open="${escapeHTML(b.id)}">Open book →</button><button class="text-btn" data-delete="${escapeHTML(b.id)}">Delete</button></article>`).join('') : `<div><h2>Your first story belongs here.</h2><p>A few sentences are all you need.</p><button id="emptyStart" class="primary">Keep a memory ↗</button>${!storageOK ? '<p>Browser storage is unavailable. You can still make and download a book.</p>' : ''}</div>`;
+  const exampleCards = familyCollection ? familyCollection.books.map(familyBookCardHTML).join('') : '';
+  const yourBooks = books.map(b=>`<article class="shelf-card">${b.pages[0].image ? `<img src="${escapeHTML(b.pages[0].image)}" alt="AI illustration for this story">` : '<span class="small-star">✳</span>'}<p class="eyebrow">${b.reviewed ? 'FAMILY REVIEWED' : 'DRAFT · READY TO REVIEW'}</p><h2>${escapeHTML(b.title)}</h2><p>${escapeHTML(attribution(b))}</p><button class="text-btn underline" data-open="${escapeHTML(b.id)}">Open book →</button><button class="text-btn" data-delete="${escapeHTML(b.id)}">Delete</button></article>`).join('');
+  const placeholderCard = `<article class="shelf-card placeholder-card"><span class="small-star">✳</span><h2>Your first book goes here.</h2><p>A few sentences are all you need.</p><button id="emptyStart" class="primary">Keep a memory ↗</button></article>`;
+  if (books.length) {
+    $('shelfBooks').innerHTML = `<div class="shelf-grid">${yourBooks}</div>${exampleCards ? `<details class="example-collection-shelf"><summary class="eyebrow">EXAMPLE FAMILY COLLECTION · LIMA, PERÚ</summary><div class="shelf-grid example-shelf-grid">${exampleCards}</div></details>` : ''}`;
+  } else {
+    $('shelfBooks').innerHTML = `<div class="shelf-grid">${placeholderCard}</div>${exampleCards ? `<p class="eyebrow example-collection-label">EXAMPLE FAMILY COLLECTION · LIMA, PERÚ</p><div class="shelf-grid">${exampleCards}</div>` : ''}${!storageOK ? '<p class="muted">Browser storage is unavailable. You can still make and download a book.</p>' : ''}`;
+  }
   $('emptyStart')?.addEventListener('click',()=>begin());
+  wireFamilyBookButtons($('shelfBooks'));
   document.querySelectorAll('[data-open]').forEach(button=>button.onclick=()=>{current=books.find(b=>b.id===button.dataset.open);pageIndex=0;renderBook();show('reader');});
   document.querySelectorAll('[data-delete]').forEach(button=>button.onclick=async()=>{if(confirm('Delete this book and its recording from this browser? Download a copy first if you want to keep it.')) {try {await database('readwrite',store=>store.delete(button.dataset.delete));await showShelf();} catch {button.textContent='Could not delete. Retry';}}});
   show('shelf');
@@ -314,10 +329,16 @@ try {books=await database('readonly',store=>store.getAll());$('shelfCount').text
 
 
 
+function familyBookCardHTML(b) {
+  return `<article class="family-book"><img src="${escapeHTML(b.cover)}" alt="${escapeHTML(b.alt)}"><div><span class="eyebrow">${escapeHTML(b.label)}</span><h3>${escapeHTML(b.title)}</h3><p class="subtitle">${escapeHTML(b.subtitle)}</p><p>${escapeHTML(b.description)}</p><button class="text-btn underline" data-family-book="${escapeHTML(b.path)}">Read this story →</button></div></article>`;
+}
+function wireFamilyBookButtons(container, statusEl) {
+  container.querySelectorAll('[data-family-book]').forEach(button=>button.onclick=async()=>{button.disabled=true;try{const response=await fetch(button.dataset.familyBook);if(!response.ok)throw new Error();current=await response.json();pageIndex=0;renderBook();show('reader');}catch{if(statusEl)statusEl.textContent='This story could not load. Please try again.';}finally{button.disabled=false;}});
+}
 try {
-  const response=await fetch('stories/lima/collection.json');if(!response.ok)throw new Error();const collection=await response.json();
-  $('familyBooks').innerHTML=collection.books.map(b=>`<article class="family-book"><img src="${escapeHTML(b.cover)}" alt="${escapeHTML(b.alt)}"><div><span class="eyebrow">${escapeHTML(b.label)}</span><h3>${escapeHTML(b.title)}</h3><p class="subtitle">${escapeHTML(b.subtitle)}</p><p>${escapeHTML(b.description)}</p><button class="text-btn underline" data-family-book="${escapeHTML(b.path)}">Read this story →</button></div></article>`).join('');
-  $('familyBooks').querySelectorAll('button').forEach(button=>button.onclick=async()=>{button.disabled=true;try{const response=await fetch(button.dataset.familyBook);if(!response.ok)throw new Error();current=await response.json();pageIndex=0;renderBook();show('reader');}catch{$('collectionStatus').textContent='This story could not load. Please try again.';}finally{button.disabled=false;}});
+  const response=await fetch('stories/lima/collection.json');if(!response.ok)throw new Error();familyCollection=await response.json();
+  $('familyBooks').innerHTML=familyCollection.books.map(familyBookCardHTML).join('');
+  wireFamilyBookButtons($('familyBooks'),$('collectionStatus'));
 } catch {$('collectionStatus').textContent='The Lima collection is temporarily unavailable. Please reload to try again.';}
 
 function updateShareControls() {
@@ -343,7 +364,10 @@ function syncRoute(view,replace=false) {
     else if(publicStorySlug(current))url.searchParams.set('story',publicStorySlug(current));
     else url.searchParams.set('local',current.id);
     if(studio.isJudging()&&!current.demo)url.searchParams.set('demo','1');
-    if(!studio.isJudging()&&studio.exportState().language!=='Original')url.searchParams.set('lang',studio.exportState().language);
+    // Casual language switching stays in-session only; the visible/bookmarkable URL
+    // always defaults back to the story's Original edition (English for the bread
+    // story). Explicit share links still carry `lang` via storyLink() in navigation.js,
+    // and applyLocation() below still honors an incoming `lang` param for those links.
   }else if(view!=='home')url.searchParams.set('view',view);
   if(url.href!==location.href)history[replace?'replaceState':'pushState']({view},'',url);
 }
