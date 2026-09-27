@@ -1,0 +1,8 @@
+# Author: Alex Picon <alexnpc@me.com>
+keeper-ai.tech, www.keeper-ai.tech {
+    encode zstd gzip
+    request_body {
+        max_size 25MB
+    }
+    reverse_proxy 127.0.0.1:8888
+}

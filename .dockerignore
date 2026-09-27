@@ -1,0 +1,6 @@
+# Author: Alex Picon <alexnpc@me.com>
+.git
+.env
+.env.*
+.venv
+__pycache__
