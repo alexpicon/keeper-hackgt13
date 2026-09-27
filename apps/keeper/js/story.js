@@ -6,6 +6,7 @@ const escapeHTML = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;'
 const prompts = ['Tell me about someone at work who looked out for you.', 'What did your family do when money was short?', 'Tell me about a friendship that helped you through.', 'What happened on a day when everything went wrong?', 'Who showed up for the family during an illness?', 'Which story do you most want the next generation to know?'];
 const rememberedPrompts = ['What small habit of theirs do you still remember?', 'What story did they tell more than once?', 'What was their kitchen like?', 'What is a saying you associate with them?', 'What did they tell you about the world they grew up in?', 'What did they teach you that you still do today?'];
 function updatePrompt() { const choices = document.querySelector('input[name=perspective]:checked').value === 'remembered' ? rememberedPrompts : prompts; $('promptText').textContent = choices[promptIndex % choices.length]; }
+const drawing = new WeakSet();
 let promptIndex = 0, books = [], current = null, pageIndex = 0, draftAudio = null, recorder = null, recognition = null, stream = null, timer = null, editingId = null, storageOK = true, familyCollection = null;
 let routingReady = false, applyingRoute = false, routeEpoch = 0;
 let draftTranscript = null;
@@ -131,6 +132,7 @@ $('memoryForm').onsubmit = async e => {
     await saveBook();
     if (storageOK) { clearTimeout(draftTimer); await database('readwrite',store=>store.delete('active'),'drafts'); $('resumeBtn').hidden=true; }
     pageIndex = 0; renderBook(); show('reader');
+    if (draft.source === 'ai') autoIllustrate(current);
   } catch (error) { $('formStatus').textContent = error.message === 'The operation was aborted due to timeout' ? 'Drafting took too long. Your memory is still here; please try again.' : 'Could not reach the story service. Your memory is still here; please try again.'; }
   finally { $('makeBtn').disabled = false; $('makeBtn').innerHTML = 'Make our storybook <span>↗</span>'; }
 };
@@ -192,6 +194,7 @@ function renderPage(focusHeading = false) {
   $('bookStats').textContent=`${chapterPages.length} chapters · ${count.toLocaleString()} words · about ${Math.max(1,Math.ceil(count/160))} minutes`;
   $('chapterList').innerHTML=chapterPages.map((p,i)=>`<button type="button" data-chapter="${i}" ${i===pageIndex?'aria-current="page"':''}><span>${String(i+1).padStart(2,'0')}</span>${escapeHTML(p.title)}</button>`).join('');
   $('chapterList').querySelectorAll('button').forEach(button=>button.onclick=()=>goToChapter(Number(button.dataset.chapter)));
+  if ($('illustrateBtn') && drawing.has(page)) { $('illustrateBtn').disabled = true; $('imageStatus').textContent = 'Painting this page now…'; }
   if ($('illustrateBtn')) $('illustrateBtn').onclick = async () => {
     const targetBook = current, targetPage = page;
     $('illustrateBtn').disabled = true; $('imageStatus').textContent = 'Painting your memory… this may take a minute.';
@@ -203,6 +206,30 @@ function renderPage(focusHeading = false) {
       else await database('readwrite', store => store.put(targetBook));
     } catch { if (current === targetBook && current.pages[pageIndex] === targetPage && $('imageStatus')) { $('imageStatus').textContent = 'Illustration unavailable. Your story is safe. Try again.'; $('illustrateBtn').disabled=false; } }
   };
+}
+// Paint every chapter automatically after a new book is drafted, two at a time.
+async function autoIllustrate(book) {
+  const todo = book.pages.filter(p => p.illustration && !p.image);
+  if (!todo.length) return;
+  let done = 0;
+  const status = () => { if (current === book && $('readerStatus')) $('readerStatus').textContent = done < todo.length ? `Painting illustrations… ${done} of ${todo.length}` : 'All illustrations are ready.'; };
+  todo.forEach(p => drawing.add(p)); status();
+  const queue = [...todo];
+  async function worker() {
+    while (queue.length) {
+      const page = queue.shift();
+      try {
+        const response = await fetch('/api/keeper/story/illustration',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:page.illustration}),signal:AbortSignal.timeout(110000)});
+        if (response.ok) { page.image = (await response.json()).image; book.reviewed = false; }
+      } catch {}
+      drawing.delete(page); done++;
+      if (current === book) { await saveBook(); if (current.pages[pageIndex] === page && !document.getElementById('pageEdit')) renderPage(); }
+      else await database('readwrite', store => store.put(book));
+      status();
+    }
+  }
+  await Promise.all([worker(), worker()]);
+  if (todo.some(p => !p.image) && current === book && $('readerStatus')) $('readerStatus').textContent = 'Some illustrations could not be painted. Use “Illustrate this page” to retry.';
 }
 function reducedMotion() { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
 function updateStickyBar() {
@@ -272,8 +299,10 @@ $('resumeBtn').onclick=async()=>{
     updatePrompt(); $('memoryText').oninput(); $('consent').checked=false; $('draftStatus').textContent='Your unfinished memory, recovered.';show('capture');
   } catch { $('resumeBtn').textContent='Could not recover draft'; }
 };
+// Saved copies of example books keep the title they were saved with; refresh it from the current collection.
+function refreshCuratedTitles(list) {   for (const b of list) {     const card = familyCollection?.books.find(c => c.subtitle && c.subtitle === b.translations?.Spanish?.title);     if (card) { b.title = card.title; b.subtitle = card.subtitle; }     else if ((b.curated || b.public_story_slug) && b.subtitle && b.title === b.translations?.Spanish?.title) { [b.title, b.subtitle] = [b.subtitle, b.title]; }   } }
 async function showShelf() {
-  try { books = (await database('readonly', store => store.getAll())).sort((a,b)=>b.created.localeCompare(a.created)); } catch { storageOK=false; }
+  try { books = (await database('readonly', store => store.getAll())).sort((a,b)=>b.created.localeCompare(a.created)); } catch { storageOK=false; } refreshCuratedTitles(books);
   $('shelfCount').textContent=books.length;
   const exampleCards = familyCollection ? familyCollection.books.map(familyBookCardHTML).join('') : '';
   const yourBooks = books.map(b=>`<article class="shelf-card">${b.pages[0].image ? `<img src="${escapeHTML(b.pages[0].image)}" alt="AI illustration for this story">` : '<span class="small-star">✳</span>'}<p class="eyebrow">${b.reviewed ? 'FAMILY REVIEWED' : 'DRAFT · READY TO REVIEW'}</p><h2>${escapeHTML(b.title)}</h2><p>${escapeHTML(attribution(b))}</p><button class="text-btn underline" data-open="${escapeHTML(b.id)}">Open book →</button><button class="text-btn" data-delete="${escapeHTML(b.id)}">Delete</button></article>`).join('');

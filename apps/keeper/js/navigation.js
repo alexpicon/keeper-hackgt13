@@ -5,8 +5,8 @@ export function collectionSlug(book) {
   if (COLLECTION_SLUGS.includes(book?.collection_slug)) return book.collection_slug;
   if (book?.id?.startsWith('lima-') && COLLECTION_SLUGS.includes(book.id.slice(5))) return book.id.slice(5);
   if (book?.provenance?.kind === 'woven-recollections') return 'bread';
-  if (book?.title === 'Las manos que se cuidaban') return 'port';
-  if (book?.title === 'La familia que seguía volviendo') return 'care';
+  if ([book?.title, book?.subtitle].some(t => t === 'Las manos que se cuidaban' || t === 'The hands that looked out for each other')) return 'port';
+  if ([book?.title, book?.subtitle].some(t => t === 'La familia que seguía volviendo' || t === 'The family who kept showing up')) return 'care';
   return null;
 }
 export function publicStorySlug(book) {

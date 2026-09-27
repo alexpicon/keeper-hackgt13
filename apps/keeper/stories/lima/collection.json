@@ -1,10 +1,11 @@
 {
-  "title": "Las historias que nos hicieron",
+  "title": "The stories that made us",
+  "subtitle": "Las historias que nos hicieron",
   "books": [
     {
       "slug": "bread",
-      "title": "El pan que pudo traer",
-      "subtitle": "The bread he brought home",
+      "title": "The bread he brought home",
+      "subtitle": "El pan que pudo traer",
       "label": "GRANDMA’S TELLING · FAMILY RECONSTRUCTION",
       "description": "A father’s work, a four-year-old’s innocent request, and a grandmother’s prayer on the way home.",
       "cover": "stories/lima/bread/chapter-02-carmen.webp",
@@ -13,8 +14,8 @@
     },
     {
       "slug": "port",
-      "title": "Las manos que se cuidaban",
-      "subtitle": "The hands that looked out for each other",
+      "title": "The hands that looked out for each other",
+      "subtitle": "Las manos que se cuidaban",
       "label": "FICTION INSPIRED BY FAMILY THEMES",
       "description": "An imagined crew of stevedores discovers that looking out for one another is part of the work.",
       "cover": "stories/lima/port/scene-1.webp",
@@ -23,8 +24,8 @@
     },
     {
       "slug": "care",
-      "title": "La familia que seguía volviendo",
-      "subtitle": "The family who kept showing up",
+      "title": "The family who kept showing up",
+      "subtitle": "La familia que seguía volviendo",
       "label": "FICTION INSPIRED BY FAMILY THEMES",
       "description": "A family in Lima learns to share the work of caring through illness, hunger, and an uncertain week.",
       "cover": "stories/lima/care/scene-1.webp",
