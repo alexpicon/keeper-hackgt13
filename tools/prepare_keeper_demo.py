@@ -1,6 +1,7 @@
 # Author: Alex Picon <alexnpc@me.com>
 """Build a complete fictional grandpa story and its real AI storybook adaptation."""
 import asyncio
+import os
 import base64
 import hashlib
 import io
@@ -13,7 +14,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'apps/keeper/demo'
 CACHE = Path('/tmp/keeper-long-demo')
-BASE = 'http://localhost:8888/api/keeper'
+BASE = os.getenv('KEEPER_BASE_URL','http://localhost:8892').rstrip('/')+'/api/keeper'
 
 
 async def main():
@@ -53,15 +54,15 @@ async def main():
         spanish['prepared']=True
         async def chapter(i,page):
             english_audio,spanish_audio,art=await asyncio.gather(
-                speech(page['text'],f'story-{i+1}-en'),
-                speech(spanish['pages'][i]['text'],f'story-{i+1}-es'),
+                speech(page['text'],f'story-{i+1}-en','rachel'),
+                speech(spanish['pages'][i]['text'],f'story-{i+1}-es','tina'),
                 post('/story/illustration',{'prompt':page['illustration']}))
             name=f'story-{i+1}.webp'
             Image.open(io.BytesIO(base64.b64decode(art['image'].split(',',1)[1]))).save(OUT/name,quality=87)
-            page.update(image='demo/'+name,narrations={'Original:george':english_audio,'Spanish:george':spanish_audio})
+            page.update(image='demo/'+name,narrations={'Original:rachel':english_audio,'Spanish:tina':spanish_audio})
             print('Prepared chapter',i+1,flush=True)
         await asyncio.gather(*(chapter(i,page) for i,page in enumerate(book['pages'])))
-        book.update(id='example',demo=True,source='example',reviewed=False,defaultVoice='george',memory=memory,
+        book.update(id='example',demo=True,source='example',reviewed=False,defaultVoice='rachel',defaultVoices={'Original':'rachel','English':'rachel','Spanish':'tina'},memory=memory,
             audio=source['audio'],audioKind='generated-demo',transcript=transcript,translations={'Spanish':spanish},
             notice='Fictional demo: Grandpa tells a complete childhood story in an ElevenLabs-generated voice. This eight-chapter imaginative adaptation adds scenes, dialogue, and wonder; each chapter names its additions. The full original telling is preserved.')
         target=OUT/'book.json';temporary=OUT/'book.pending';temporary.write_text(json.dumps(book,ensure_ascii=False,indent=2));temporary.replace(target)
@@ -70,3 +71,5 @@ async def main():
 
 if __name__=='__main__':
     asyncio.run(main())
+    import subprocess, sys
+    subprocess.run([sys.executable, str(ROOT/'tools/prepare_keeper_narration.py')], check=True)

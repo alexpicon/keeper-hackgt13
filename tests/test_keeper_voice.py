@@ -32,6 +32,17 @@ class KeeperVoiceTests(unittest.TestCase):
         self.assertEqual(response.json()['kind'], 'generated-narration')
         self.assertTrue(response.json()['audio'].startswith('data:audio/mpeg;base64,'))
 
+    def test_new_voices_reach_the_requested_provider_ids(self):
+        for voice, voice_id in [('rachel', '0rEo3eAjssGDUCXHYENf'), ('tina', 'lZmnvfWF4ko4J7F7QDtX')]:
+            with self.subTest(voice=voice), self.provider({'audio_base64': 'YXVkaW8='}) as post:
+                response = self.client.post('/api/keeper/voice/narrate', json={'text': 'A family memory.', 'voice': voice})
+                self.assertEqual(response.status_code, 200)
+                self.assertIn('/'+voice_id+'/with-timestamps', post.call_args.args[0])
+                self.assertEqual(response.json()['voice_id'], voice_id)
+        with self.provider({'audio_base64': 'YXVkaW8='}) as post:
+            self.client.post('/api/keeper/voice/narrate', json={'text': 'Default English reading.'})
+            self.assertIn('/0rEo3eAjssGDUCXHYENf/', post.call_args.args[0])
+
     def test_voice_allowlist_and_length_limit(self):
         for payload in [{'text': 'Hello', 'voice': '../../other'}, {'text': 'x' * 5001}]:
             self.assertEqual(self.client.post('/api/keeper/voice/narrate', json=payload).status_code, 422)

@@ -1,6 +1,7 @@
 # Author: Alex Picon <alexnpc@me.com>
 """Illustrate and prepare opening narrations for the curated Lima collection."""
 import asyncio
+import os
 import base64
 import hashlib
 import io
@@ -12,7 +13,7 @@ import httpx
 from PIL import Image
 
 ROOT=Path(__file__).resolve().parents[1]
-BASE='http://localhost:8888/api/keeper'
+BASE=os.getenv('KEEPER_BASE_URL','http://localhost:8892').rstrip('/')+'/api/keeper'
 CACHE=Path('/tmp/keeper-lima-assets')
 
 
@@ -34,7 +35,7 @@ async def main():
                 Image.open(io.BytesIO(base64.b64decode(result['image'].split(',',1)[1]))).save(target/f'scene-{i+1}.webp',quality=88)
             # Source is written recollection. Never synthesize it as an "original recording".
             async def reading(text,language):
-                clip=await post('/voice/narrate',{'text':text,'voice':data['defaultVoice']})
+                clip=await post('/voice/narrate',{'text':text,'voice':'tina' if language=='Spanish' else 'rachel'})
                 name=f'opening-{language.lower()}.mp3';(target/name).write_bytes(base64.b64decode(clip['audio'].split(',',1)[1]))
                 return {**clip,'audio':f'stories/lima/{slug}/{name}','text':text,'prepared':True,'provenance':'Prepared reading voice · not a family recording'}
             translation=await post('/voice/translate',{'title':data['title'],'pages':[{'title':p['title'],'text':p['text']} for p in data['pages']],'language':'Spanish'})
@@ -46,7 +47,7 @@ async def main():
             if [p['text'] for p in latest['pages']] != [p['text'] for p in data['pages']]:
                 raise RuntimeError('Story text changed while preparing assets; retry the build.')
             data=latest
-            data['translations']={'Spanish':translation};data['pages'][0]['narrations']={f'Original:{data["defaultVoice"]}':narrations[0],f'Spanish:{data["defaultVoice"]}':narrations[1]}
+            data['translations']={'Spanish':translation};data['pages'][0]['narrations']={'Original:rachel':narrations[0],'Spanish:tina':narrations[1]}
             (target/'book.json').write_text(json.dumps(data,ensure_ascii=False,indent=2))
             print('Complete',slug,flush=True)
         await asyncio.gather(*(book(slug) for slug in ['bread','port','care']))

@@ -27,3 +27,6 @@ Extracted from the collaborative HackGT 13 repository. No other application or r
 Live app: https://keeper-ai.tech/keeper/
 
 Every push to `main` runs tests and deploys the exact commit to Vultr. Failed health checks restore the previous container. See [deployment instructions](deploy/README.md). The private `.env` lives at the project root locally and `/opt/keeper/shared/.env` on the server; it is excluded from Git and preserved across releases.
+
+
+English reading defaults to **Grandma Rachel** (`0rEo3eAjssGDUCXHYENf`); Spanish defaults to **Abuela Tina** (`lZmnvfWF4ko4J7F7QDtX`). Switching editions selects the corresponding default. All eight chapters of each bundled book are prebuilt in both languages, with word timing. These are generated reading voices, not original family recordings. The demo video uses Grandma Rachel.

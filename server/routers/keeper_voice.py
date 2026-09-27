@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 router = APIRouter(prefix="/api/keeper/voice", tags=["keeper-voice"])
-VOICES = {"sarah": "EXAVITQu4vr4xnSDxMaL", "george": "JBFqnCBsd6RMkjVDRZzb", "lily": "pFZP5JQG7iQjIQuC4Bku"}
+VOICES = {"rachel": "0rEo3eAjssGDUCXHYENf", "tina": "lZmnvfWF4ko4J7F7QDtX", "sarah": "EXAVITQu4vr4xnSDxMaL", "george": "JBFqnCBsd6RMkjVDRZzb", "lily": "pFZP5JQG7iQjIQuC4Bku"}
 MAX_AUDIO = 20 * 1024 * 1024
 
 
@@ -27,7 +27,7 @@ def eleven_key():
 
 class Narration(BaseModel):
     text: str = Field(min_length=1, max_length=5000)
-    voice: Literal["sarah", "george", "lily"] = "sarah"
+    voice: Literal["rachel", "tina", "sarah", "george", "lily"] = "rachel"
 
 
 class Interview(BaseModel):
@@ -74,7 +74,7 @@ async def narrate(payload: Narration):
             alignment = data.get("normalized_alignment") or data.get("alignment") or {}
         return private_response({"audio": "data:audio/mpeg;base64," + audio,
                                  "alignment": alignment, "voice": payload.voice,
-                                 "provider": "ElevenLabs", "kind": "generated-narration"})
+                                 "provider": "ElevenLabs", "voice_id": VOICES[payload.voice], "kind": "generated-narration"})
     except (httpx.HTTPError, KeyError, ValueError, TypeError):
         raise HTTPException(502, "Narration is unavailable. Try again; your story is unchanged.") from None
 

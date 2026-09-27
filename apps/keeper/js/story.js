@@ -150,7 +150,7 @@ function renderBook() {
   $('sharePanel').hidden=true;
   updateShareControls();
   const slug=collectionSlug(current);
-  $('collectionUpdateBtn').hidden=!(!current.curated && slug && (current.memory.chapter_length!=='concise' || current.visual_revision!==(slug==='bread'?'chapter-scenes-carmen-v2':'companion-chapter-scenes-v1')));
+  $('collectionUpdateBtn').hidden=!(!current.curated && slug && (current.defaultVoices?.Original!=='rachel' || current.defaultVoices?.Spanish!=='tina' || current.memory.chapter_length!=='concise' || current.visual_revision!==(slug==='bread'?'chapter-scenes-carmen-v2':'companion-chapter-scenes-v1')));
   $('bookTitle').textContent = current.title; $('bookDedication').textContent = current.memory.dedication;
   $('bookAttribution').textContent = attribution(current);
   $('bookSource').textContent = current.provenance?.label || (current.demo ? 'FICTIONAL EXAMPLE' : current.source === 'ai' ? (current.style==='imaginative'?'IMAGINATIVE RETELLING · FAMILY REVIEW':'AI-EDITED · FAMILY REVIEW') : 'ORIGINAL WORDS');
