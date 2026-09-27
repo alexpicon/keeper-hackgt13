@@ -1,5 +1,5 @@
 // Author: Alex Picon <alexnpc@me.com>
-import { createVoiceStudio } from './voice-studio.js';
+import { createVoiceStudio } from './voice-studio.js?v=prepared-audio-recovery';
 import { COLLECTION_SLUGS, collectionSlug, publicStorySlug, storyLink, newBookId } from './navigation.js';
 const $ = (id) => document.getElementById(id);
 const escapeHTML = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
